@@ -1,0 +1,11 @@
+spring:
+    application:
+        name: ariary
+    datasource:
+        url: ${ARIARY_DB_URL:jdbc:oracle:thin:@//localhost:1521/FREEPDB1}
+        username: ${ARIARY_DB_USER:ariary}
+        password: ${ARIARY_DB_PASSWORD:ariary}
+    jpa:
+        open-in-view: false
+        hibernate:
+            ddl-auto: validate
