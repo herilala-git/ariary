@@ -49,6 +49,10 @@ public class Calendar {
 		return Map.copyOf(holidays);
 	}
 
+	public void addHoliday(LocalDate day, String holidayName) {
+		holidays.put(day, holidayName);
+	}
+
 	public boolean isBusinessDay(LocalDate day) {
 		return !WEEKEND.contains(day.getDayOfWeek()) && !holidays.containsKey(day);
 	}
@@ -61,6 +65,24 @@ public class Calendar {
 		return next;
 	}
 
+	public LocalDate previousBusinessDay(LocalDate day) {
+		LocalDate previous = day.minusDays(1);
+		while (!isBusinessDay(previous)) {
+			previous = previous.minusDays(1);
+		}
+		return previous;
+	}
+
+	public LocalDate rollFollowing(LocalDate day) {
+		return isBusinessDay(day) ? day : nextBusinessDay(day);
+	}
+
+	public LocalDate rollModifiedFollowing(LocalDate day) {
+		LocalDate next = rollFollowing(day);
+		return next.getMonth() == day.getMonth() ? next : previousBusinessDay(day);
+	}
+
+	// TODO jour ouvre precedent
 	public List<LocalDate> businessDays(LocalDate from, LocalDate to) {
 		return from.datesUntil(to.plusDays(1)).filter(this::isBusinessDay).collect(Collectors.toUnmodifiableList());
 	}

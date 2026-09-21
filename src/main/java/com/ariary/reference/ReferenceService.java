@@ -28,6 +28,9 @@ public class ReferenceService {
 	public record HolidayDto(LocalDate date, String name) {
 	}
 
+	public record RollDto(LocalDate date, boolean businessDay, LocalDate following, LocalDate modifiedFollowing) {
+	}
+
 	private static final String ROOT = "";
 
 	private final LegalEntityRepository entities;
@@ -85,13 +88,19 @@ public class ReferenceService {
 		return calendar(code).businessDays(from, to);
 	}
 
+	public RollDto roll(String code, LocalDate date) {
+		var calendar = calendar(code);
+		return new RollDto(date, calendar.isBusinessDay(date), calendar.rollFollowing(date),
+				calendar.rollModifiedFollowing(date));
+	}
+
 	public List<HolidayDto> holidays(String code, int year) {
 		return calendar(code).getHolidays().entrySet().stream().filter(h -> h.getKey().getYear() == year)
 				.sorted(Map.Entry.comparingByKey()).map(h -> new HolidayDto(h.getKey(), h.getValue()))
 				.collect(Collectors.toUnmodifiableList());
 	}
 
-	private Calendar calendar(String code) {
+	Calendar calendar(String code) {
 		return calendars.findById(code.toUpperCase()).orElseThrow();
 	}
 

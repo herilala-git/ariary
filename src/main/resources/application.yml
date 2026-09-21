@@ -9,3 +9,6 @@ spring:
         open-in-view: false
         hibernate:
             ddl-auto: validate
+
+ariary:
+    data-dir: ${ARIARY_DATA_DIR:data}
