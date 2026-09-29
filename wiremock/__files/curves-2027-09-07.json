@@ -1,0 +1,87 @@
+[
+	{
+		"currency": "CAD",
+		"points": [
+			{
+				"days": 0,
+				"rate": 0.0455
+			},
+			{
+				"days": 365,
+				"rate": 0.0455
+			},
+			{
+				"days": 1825,
+				"rate": 0.0485
+			}
+		]
+	},
+	{
+		"currency": "USD",
+		"points": [
+			{
+				"days": 0,
+				"rate": 0.0500
+			},
+			{
+				"days": 365,
+				"rate": 0.0505
+			},
+			{
+				"days": 1825,
+				"rate": 0.0525
+			}
+		]
+	},
+	{
+		"currency": "EUR",
+		"points": [
+			{
+				"days": 0,
+				"rate": 0.0300
+			},
+			{
+				"days": 365,
+				"rate": 0.0310
+			},
+			{
+				"days": 1825,
+				"rate": 0.0330
+			}
+		]
+	},
+	{
+		"currency": "GBP",
+		"points": [
+			{
+				"days": 0,
+				"rate": 0.0475
+			},
+			{
+				"days": 365,
+				"rate": 0.0470
+			},
+			{
+				"days": 1825,
+				"rate": 0.0460
+			}
+		]
+	},
+	{
+		"currency": "MGA",
+		"points": [
+			{
+				"days": 0,
+				"rate": 0.0950
+			},
+			{
+				"days": 365,
+				"rate": 0.1000
+			},
+			{
+				"days": 1825,
+				"rate": 0.1100
+			}
+		]
+	}
+]

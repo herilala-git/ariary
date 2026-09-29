@@ -12,3 +12,5 @@ spring:
 
 ariary:
     data-dir: ${ARIARY_DATA_DIR:data}
+    market:
+        url: ${ARIARY_MARKET_URL:http://localhost:8081}

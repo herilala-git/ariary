@@ -1,0 +1,61 @@
+{
+	"mappings": [
+		{
+			"priority": 1,
+			"request": {
+				"method": "GET",
+				"urlPath": "/market/fx-rates",
+				"queryParameters": {
+					"date": {
+						"equalTo": "2027-09-03"
+					}
+				}
+			},
+			"response": {
+				"status": 200,
+				"headers": {
+					"Content-Type": "application/json"
+				},
+				"bodyFileName": "fx-2027-09-03.json"
+			}
+		},
+		{
+			"priority": 1,
+			"request": {
+				"method": "GET",
+				"urlPath": "/market/fx-rates",
+				"queryParameters": {
+					"date": {
+						"equalTo": "2027-09-07"
+					}
+				}
+			},
+			"response": {
+				"status": 200,
+				"headers": {
+					"Content-Type": "application/json"
+				},
+				"bodyFileName": "fx-2027-09-07.json"
+			}
+		},
+		{
+			"priority": 10,
+			"request": {
+				"method": "GET",
+				"urlPath": "/market/fx-rates",
+				"queryParameters": {
+					"date": {
+						"matches": "[0-9]{4}-[0-9]{2}-[0-9]{2}"
+					}
+				}
+			},
+			"response": {
+				"status": 200,
+				"headers": {
+					"Content-Type": "application/json"
+				},
+				"bodyFileName": "fx-2027-09-03.json"
+			}
+		}
+	]
+}

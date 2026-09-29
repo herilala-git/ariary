@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -84,7 +83,7 @@ public class Calendar {
 
 	// TODO jour ouvre precedent
 	public List<LocalDate> businessDays(LocalDate from, LocalDate to) {
-		return from.datesUntil(to.plusDays(1)).filter(this::isBusinessDay).collect(Collectors.toUnmodifiableList());
+		return from.datesUntil(to.plusDays(1)).filter(this::isBusinessDay).toList();
 	}
 
 }

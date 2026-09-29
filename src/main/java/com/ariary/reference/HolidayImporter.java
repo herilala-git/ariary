@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +40,7 @@ public class HolidayImporter {
 		List<String[]> lines = content.lines().map(String::strip).filter(not(String::isBlank))
 				.filter(line -> !line.startsWith("#"))
 				// TODO lignes mal formees (sans ;)
-				.map(line -> line.split(";")).collect(Collectors.toList());
+				.map(line -> line.split(";")).toList();
 		lines.forEach(parts -> calendar.addHoliday(LocalDate.parse(parts[0]), parts[1]));
 		log.info("{} holidays for {} {}", lines.size(), calendar.getCode(), year);
 		return lines.size() + " holidays imported into " + calendar.getCode() + " for " + year;

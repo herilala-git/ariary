@@ -1,7 +1,6 @@
 package com.ariary.reference;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +28,7 @@ public class CurrencyController {
 
 	@GetMapping
 	public List<CurrencyDto> list() {
-		return repository.findAllByOrderByCodeAsc().stream().map(CurrencyDto::from).collect(Collectors.toList());
+		return repository.findAllByOrderByCodeAsc().stream().map(CurrencyDto::from).toList();
 	}
 
 	@GetMapping("/{code}")

@@ -1,0 +1,27 @@
+[
+	{
+		"base": "USD",
+		"quote": "CAD",
+		"rate": 1.365
+	},
+	{
+		"base": "EUR",
+		"quote": "CAD",
+		"rate": 1.481
+	},
+	{
+		"base": "GBP",
+		"quote": "CAD",
+		"rate": 1.748
+	},
+	{
+		"base": "MGA",
+		"quote": "CAD",
+		"rate": 0.000306
+	},
+	{
+		"base": "EUR",
+		"quote": "USD",
+		"rate": 1.085
+	}
+]
