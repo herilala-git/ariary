@@ -50,17 +50,16 @@ public class ReferenceService {
 
 	public List<EntityDto> entities() {
 		return entities.findAll().stream()
-				.map(e -> new EntityDto(e.getCode(), e.getName(), e.getReportingCurrency().getCode()))
-				.collect(Collectors.toUnmodifiableList());
+				.map(e -> new EntityDto(e.getCode(), e.getName(), e.getReportingCurrency().getCode())).toList();
 	}
 
 	public List<CounterpartyDto> counterparties() {
 		return counterparties.findAll().stream().map(c -> new CounterpartyDto(c.getCode(), c.getName(), c.getRating()))
-				.collect(Collectors.toUnmodifiableList());
+				.toList();
 	}
 
 	public List<String> portfolioCodes() {
-		return portfolios.findAll().stream().map(Portfolio::getCode).collect(Collectors.toList());
+		return portfolios.findAll().stream().map(Portfolio::getCode).toList();
 	}
 
 	// arbre des portefeuilles
@@ -74,7 +73,7 @@ public class ReferenceService {
 	private List<Node> children(String parent, Map<String, List<Portfolio>> byParent) {
 		return byParent.getOrDefault(parent, List.of()).stream()
 				.map(p -> new Node(p.getCode(), p.getName(), p.getEntity().getCode(), children(p.getCode(), byParent)))
-				.collect(Collectors.toUnmodifiableList());
+				.toList();
 	}
 
 	public BusinessDateDto businessDate() {
@@ -96,8 +95,7 @@ public class ReferenceService {
 
 	public List<HolidayDto> holidays(String code, int year) {
 		return calendar(code).getHolidays().entrySet().stream().filter(h -> h.getKey().getYear() == year)
-				.sorted(Map.Entry.comparingByKey()).map(h -> new HolidayDto(h.getKey(), h.getValue()))
-				.collect(Collectors.toUnmodifiableList());
+				.sorted(Map.Entry.comparingByKey()).map(h -> new HolidayDto(h.getKey(), h.getValue())).toList();
 	}
 
 	Calendar calendar(String code) {
