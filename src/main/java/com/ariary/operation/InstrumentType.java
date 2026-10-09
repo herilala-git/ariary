@@ -2,6 +2,6 @@ package com.ariary.operation;
 
 public enum InstrumentType {
 
-	DEPOSIT
+	DEPOSIT, FX_FORWARD, BOND
 
 }

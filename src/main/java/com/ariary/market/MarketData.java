@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 public record MarketData(LocalDate date, Map<String, BigDecimal> fxRates, Map<String, YieldCurve> curves) {
 
@@ -40,6 +41,11 @@ public record MarketData(LocalDate date, Map<String, BigDecimal> fxRates, Map<St
 			throw new NoSuchElementException("No " + currency + " curve on " + date);
 		}
 		return curve;
+	}
+
+	public MarketData shift(double basisPoints) {
+		return new MarketData(date, fxRates,
+				curves.values().stream().collect(Collectors.toMap(YieldCurve::currency, c -> c.shift(basisPoints))));
 	}
 
 	public double discountFactor(String currency, LocalDate payDate) {

@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ariary.instrument.Instrument;
 import com.ariary.market.MarketService;
 import com.ariary.operation.OperationRepository;
 import com.ariary.reference.BusinessDateRepository;
@@ -32,12 +33,17 @@ public class ValuationService {
 	}
 
 	public ValueDto value(long id, LocalDate asOf) {
-		LocalDate date = (asOf != null) ? asOf : businessDate.current().getCurrentDay();
-		var o = operations.findById(id).orElseThrow(() -> new NoSuchElementException("Operation " + id));
-		String currency = o.getCurrency().getCode();
-		BigDecimal value = engine.depositValue(o.getNotional(), o.getRate(), o.getDayCount(), o.getStartDate(),
-				o.getMaturityDate(), currency, market.load(date));
-		return new ValueDto(id, date, currency, value);
+		LocalDate date = dateOrToday(asOf);
+		var instrument = instrument(id);
+		return new ValueDto(id, date, instrument.valueCurrency(), engine.value(instrument, market.load(date)));
+	}
+
+	Instrument instrument(long id) {
+		return operations.findById(id).orElseThrow(() -> new NoSuchElementException("Operation " + id)).instrument();
+	}
+
+	LocalDate dateOrToday(LocalDate asOf) {
+		return (asOf != null) ? asOf : businessDate.current().getCurrentDay();
 	}
 
 }

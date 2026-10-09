@@ -44,6 +44,18 @@ public class OperationController {
 		return service.createDeposit(request);
 	}
 
+	@PostMapping("/fx-forwards")
+	@ResponseStatus(HttpStatus.CREATED)
+	public OperationDto createFxForward(@Valid @RequestBody NewFxForwardRequest request) {
+		return service.createFxForward(request);
+	}
+
+	@PostMapping("/bonds")
+	@ResponseStatus(HttpStatus.CREATED)
+	public OperationDto createBond(@Valid @RequestBody NewBondRequest request) {
+		return service.createBond(request);
+	}
+
 	@GetMapping("/{id}")
 	public OperationDto get(@PathVariable long id) {
 		return service.get(id);

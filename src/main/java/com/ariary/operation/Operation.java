@@ -4,6 +4,12 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
+import com.ariary.instrument.Bond;
+import com.ariary.instrument.CurrencyPair;
+import com.ariary.instrument.Deposit;
+import com.ariary.instrument.FxForward;
+import com.ariary.instrument.Instrument;
+import com.ariary.instrument.Side;
 import com.ariary.reference.Counterparty;
 import com.ariary.reference.Currency;
 import com.ariary.reference.Portfolio;
@@ -61,6 +67,15 @@ public class Operation {
 
 	private LocalDate maturityDate;
 
+	private String quoteCurrency;
+
+	@Enumerated(EnumType.STRING)
+	private Side side;
+
+	private BigDecimal forwardRate;
+
+	private Integer couponFrequency;
+
 	@Version
 	private Long version;
 
@@ -69,23 +84,61 @@ public class Operation {
 	protected Operation() {
 	}
 
-	public static Operation deposit(Portfolio portfolio, Counterparty counterparty, Currency currency,
-			BigDecimal notional, BigDecimal rate, DayCount dayCount, LocalDate tradeDate, LocalDate startDate,
-			LocalDate maturityDate) {
+	private static Operation create(InstrumentType type, Portfolio portfolio, Counterparty counterparty,
+			Currency currency, BigDecimal notional, LocalDate tradeDate, LocalDate startDate, LocalDate maturityDate) {
 		var o = new Operation();
-		o.instrumentType = InstrumentType.DEPOSIT;
+		o.instrumentType = type;
 		o.status = Status.NEW;
 		o.portfolio = portfolio;
 		o.counterparty = counterparty;
 		o.currency = currency;
 		o.notional = notional;
-		o.rate = rate;
-		o.dayCount = dayCount;
 		o.tradeDate = tradeDate;
 		o.startDate = startDate;
 		o.maturityDate = maturityDate;
 		o.createdAt = Instant.now();
 		return o;
+	}
+
+	public static Operation deposit(Portfolio portfolio, Counterparty counterparty, Currency currency,
+			BigDecimal notional, BigDecimal rate, DayCount dayCount, LocalDate tradeDate, LocalDate startDate,
+			LocalDate maturityDate) {
+		var o = create(InstrumentType.DEPOSIT, portfolio, counterparty, currency, notional, tradeDate, startDate,
+				maturityDate);
+		o.rate = rate;
+		o.dayCount = dayCount;
+		return o;
+	}
+
+	public static Operation fxForward(Portfolio portfolio, Counterparty counterparty, Currency base, Currency quote,
+			Side side, BigDecimal notional, BigDecimal forwardRate, LocalDate tradeDate, LocalDate valueDate) {
+		var o = create(InstrumentType.FX_FORWARD, portfolio, counterparty, base, notional, tradeDate, tradeDate,
+				valueDate);
+		o.quoteCurrency = quote.getCode();
+		o.side = side;
+		o.forwardRate = forwardRate;
+		return o;
+	}
+
+	public static Operation bond(Portfolio portfolio, Counterparty counterparty, Currency currency,
+			BigDecimal faceValue, BigDecimal couponRate, int couponFrequency, DayCount dayCount, LocalDate tradeDate,
+			LocalDate issueDate, LocalDate maturity) {
+		var o = create(InstrumentType.BOND, portfolio, counterparty, currency, faceValue, tradeDate, issueDate,
+				maturity);
+		o.rate = couponRate;
+		o.couponFrequency = couponFrequency;
+		o.dayCount = dayCount;
+		return o;
+	}
+
+	public Instrument instrument() {
+		String code = currency.getCode();
+		return switch (instrumentType) {
+		case DEPOSIT -> new Deposit(code, notional, rate, dayCount, startDate, maturityDate);
+		case FX_FORWARD ->
+			new FxForward(new CurrencyPair(code, quoteCurrency), side, notional, forwardRate, maturityDate);
+		case BOND -> new Bond(code, notional, rate, couponFrequency, dayCount, startDate, maturityDate);
+		};
 	}
 
 	public void validate() {
@@ -157,6 +210,22 @@ public class Operation {
 
 	public LocalDate getMaturityDate() {
 		return maturityDate;
+	}
+
+	public String getQuoteCurrency() {
+		return quoteCurrency;
+	}
+
+	public Side getSide() {
+		return side;
+	}
+
+	public BigDecimal getForwardRate() {
+		return forwardRate;
+	}
+
+	public Integer getCouponFrequency() {
+		return couponFrequency;
 	}
 
 	public Long getVersion() {

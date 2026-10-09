@@ -36,6 +36,11 @@ public record YieldCurve(String currency, List<Point> points) {
 		return points.get(points.size() - 1).rate();
 	}
 
+	public YieldCurve shift(double basisPoints) {
+		return new YieldCurve(currency,
+				points.stream().map(p -> new Point(p.days(), p.rate() + basisPoints / 10_000)).toList());
+	}
+
 	public double discountFactor(long days) {
 		return Math.exp(-zeroRate(days) * days / 365.0);
 	}

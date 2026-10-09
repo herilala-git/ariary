@@ -1,10 +1,12 @@
 package com.ariary.operation;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -13,8 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ariary.reference.BusinessDateRepository;
+import com.ariary.reference.Counterparty;
 import com.ariary.reference.CounterpartyRepository;
+import com.ariary.reference.Currency;
 import com.ariary.reference.CurrencyRepository;
+import com.ariary.reference.Portfolio;
 import com.ariary.reference.PortfolioRepository;
 
 @Service
@@ -40,14 +45,26 @@ public class OperationService {
 	}
 
 	public OperationDto createDeposit(NewDepositRequest r) {
-		var portfolio = portfolios.findById(r.portfolio())
-				.orElseThrow(() -> new IllegalArgumentException("Unknown portfolio " + r.portfolio()));
-		var counterparty = counterparties.findById(r.counterparty())
-				.orElseThrow(() -> new IllegalArgumentException("Unknown counterparty " + r.counterparty()));
-		var currency = currencies.findById(r.currency())
-				.orElseThrow(() -> new IllegalArgumentException("Unknown currency " + r.currency()));
-		var operation = Operation.deposit(portfolio, counterparty, currency, r.notional(), r.rate(), r.dayCount(),
-				businessDate.current().getCurrentDay(), r.startDate(), r.maturityDate());
+		return create(() -> Operation.deposit(portfolio(r.portfolio()), counterparty(r.counterparty()),
+				currency(r.currency()), r.notional(), r.rate(), r.dayCount(), today(), r.startDate(),
+				r.maturityDate()));
+	}
+
+	public OperationDto createFxForward(NewFxForwardRequest r) {
+		return create(() -> Operation.fxForward(portfolio(r.portfolio()), counterparty(r.counterparty()),
+				currency(r.baseCurrency()), currency(r.quoteCurrency()), r.side(), r.notional(), r.forwardRate(),
+				today(), r.valueDate()));
+	}
+
+	public OperationDto createBond(NewBondRequest r) {
+		return create(() -> Operation.bond(portfolio(r.portfolio()), counterparty(r.counterparty()),
+				currency(r.currency()), r.faceValue(), r.couponRate(), r.couponFrequency(), r.dayCount(), today(),
+				r.issueDate(), r.maturity()));
+	}
+
+	private OperationDto create(Supplier<Operation> factory) {
+		var operation = factory.get();
+		operation.instrument();
 		return OperationDto.from(operations.save(operation));
 	}
 
@@ -95,6 +112,23 @@ public class OperationService {
 		var operation = load(id);
 		change.accept(operation);
 		return OperationDto.from(operations.saveAndFlush(operation));
+	}
+
+	private Portfolio portfolio(String code) {
+		return portfolios.findById(code).orElseThrow(() -> new IllegalArgumentException("Unknown portfolio " + code));
+	}
+
+	private Counterparty counterparty(String code) {
+		return counterparties.findById(code)
+				.orElseThrow(() -> new IllegalArgumentException("Unknown counterparty " + code));
+	}
+
+	private Currency currency(String code) {
+		return currencies.findById(code).orElseThrow(() -> new IllegalArgumentException("Unknown currency " + code));
+	}
+
+	private LocalDate today() {
+		return businessDate.current().getCurrentDay();
 	}
 
 	private Operation load(long id) {
