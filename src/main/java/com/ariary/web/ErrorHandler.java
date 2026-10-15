@@ -12,12 +12,13 @@ public class ErrorHandler {
 
 	@ExceptionHandler({ NoSuchElementException.class, IllegalArgumentException.class, IllegalStateException.class })
 	public ResponseEntity<String> handle(RuntimeException e) {
-		if (e instanceof NoSuchElementException notFound) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND)
-					.body(notFound.getMessage() == null ? "Not found" : notFound.getMessage());
-		}
-		HttpStatus status = (e instanceof IllegalArgumentException) ? HttpStatus.BAD_REQUEST : HttpStatus.CONFLICT;
-		return ResponseEntity.status(status).body(e.getMessage());
+		return switch (e) {
+		case NoSuchElementException notFound when notFound.getMessage() == null ->
+			ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
+		case NoSuchElementException notFound -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFound.getMessage());
+		case IllegalArgumentException badRequest -> ResponseEntity.badRequest().body(badRequest.getMessage());
+		default -> ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+		};
 	}
 
 }

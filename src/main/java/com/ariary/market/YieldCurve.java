@@ -20,7 +20,7 @@ public record YieldCurve(String currency, List<Point> points) {
 	}
 
 	public double zeroRate(long days) {
-		Point first = points.get(0);
+		Point first = points.getFirst();
 		if (days <= first.days()) {
 			return first.rate();
 		}
@@ -33,7 +33,7 @@ public record YieldCurve(String currency, List<Point> points) {
 			}
 		}
 		// taux plat apres le dernier point
-		return points.get(points.size() - 1).rate();
+		return points.getLast().rate();
 	}
 
 	public YieldCurve shift(double basisPoints) {

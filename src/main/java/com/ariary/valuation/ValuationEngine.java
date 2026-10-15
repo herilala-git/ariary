@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import org.springframework.stereotype.Component;
 
 import com.ariary.instrument.Bond;
+import com.ariary.instrument.CurrencyPair;
 import com.ariary.instrument.Deposit;
 import com.ariary.instrument.FxForward;
 import com.ariary.instrument.Instrument;
@@ -19,35 +20,28 @@ public class ValuationEngine {
 		if (!instrument.maturity().isAfter(market.date())) {
 			return BigDecimal.ZERO;
 		}
-		BigDecimal value;
-		if (instrument instanceof Deposit d) {
-			value = depositValue(d, market);
-		} else if (instrument instanceof FxForward f) {
-			value = fxForwardValue(f, market);
-		} else if (instrument instanceof Bond b) {
-			value = bondValue(b, market);
-		} else {
-			throw new IllegalArgumentException("Unknown instrument " + instrument);
-		}
+		BigDecimal value = switch (instrument) {
+		// pas encore commence : on enleve le nominal a verser
+		case Deposit d when d.start().isAfter(market.date()) ->
+			depositValue(d, market).subtract(discount(d.notional(), d.currency(), d.start(), market));
+		case Deposit d -> depositValue(d, market);
+		case FxForward(CurrencyPair(var base, var quote), var side, var notional, var forwardRate, var valueDate) ->
+			fxForwardValue(base, quote, side.apply(notional), forwardRate, valueDate, market);
+		case Bond b -> bondValue(b, market);
+		};
 		return value.setScale(2, RoundingMode.HALF_EVEN);
 	}
 
 	private BigDecimal depositValue(Deposit d, MarketData m) {
-		BigDecimal value = discount(d.notional().add(d.interest()), d.currency(), d.maturity(), m);
-		if (d.start().isAfter(m.date())) {
-			value = value.subtract(discount(d.notional(), d.currency(), d.start(), m));
-		}
-		return value;
+		return discount(d.notional().add(d.interest()), d.currency(), d.maturity(), m);
 	}
 
-	private BigDecimal fxForwardValue(FxForward f, MarketData m) {
-		String base = f.pair().base();
-		String quote = f.pair().quote();
-		double dfBase = m.discountFactor(base, f.valueDate());
-		double dfQuote = m.discountFactor(quote, f.valueDate());
+	private BigDecimal fxForwardValue(String base, String quote, BigDecimal signedNotional, BigDecimal forwardRate,
+			LocalDate valueDate, MarketData m) {
+		double dfBase = m.discountFactor(base, valueDate);
+		double dfQuote = m.discountFactor(quote, valueDate);
 		double marketForward = m.fxRate(base, quote).doubleValue() * dfBase / dfQuote;
-		double gap = marketForward - f.forwardRate().doubleValue();
-		return f.side().apply(f.notional()).multiply(BigDecimal.valueOf(gap * dfQuote));
+		return signedNotional.multiply(BigDecimal.valueOf((marketForward - forwardRate.doubleValue()) * dfQuote));
 	}
 
 	private BigDecimal bondValue(Bond b, MarketData m) {

@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import com.ariary.common.AssignedIdEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
@@ -12,7 +14,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "curve_point")
-public class CurvePoint {
+public class CurvePoint extends AssignedIdEntity<CurvePoint.Key> {
 
 	@Embeddable
 	public record Key(@Column(name = "curve_date") LocalDate date, String currency, int days) implements Serializable {
@@ -29,6 +31,11 @@ public class CurvePoint {
 	public CurvePoint(LocalDate date, String currency, int days, BigDecimal zeroRate) {
 		this.key = new Key(date, currency, days);
 		this.zeroRate = zeroRate;
+	}
+
+	@Override
+	public Key getId() {
+		return key;
 	}
 
 	public Key getKey() {

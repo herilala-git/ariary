@@ -2,12 +2,13 @@ package com.ariary.cashflow;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Component;
 
 import com.ariary.instrument.Bond;
+import com.ariary.instrument.CurrencyPair;
 import com.ariary.instrument.Deposit;
 import com.ariary.instrument.FxForward;
 import com.ariary.instrument.Instrument;
@@ -16,24 +17,18 @@ import com.ariary.instrument.Instrument;
 public class CashFlowEngine {
 
 	public List<CashFlow> cashFlows(Instrument instrument) {
-		if (instrument instanceof Deposit d) {
-			BigDecimal repayment = d.notional().add(d.interest()).setScale(2, RoundingMode.HALF_EVEN);
-			return List.of(new CashFlow(d.start(), d.currency(), d.notional().negate()),
-					new CashFlow(d.maturity(), d.currency(), repayment));
+		return switch (instrument) {
+		case Deposit d ->
+			List.of(new CashFlow(d.start(), d.currency(), d.notional().negate()), new CashFlow(d.maturity(),
+					d.currency(), d.notional().add(d.interest()).setScale(2, RoundingMode.HALF_EVEN)));
+		case FxForward(CurrencyPair(var base, var quote), var side, var notional, var forwardRate, var valueDate) -> {
+			BigDecimal baseAmount = side.apply(notional);
+			yield List.of(new CashFlow(valueDate, base, baseAmount), new CashFlow(valueDate, quote,
+					baseAmount.multiply(forwardRate).negate().setScale(2, RoundingMode.HALF_EVEN)));
 		}
-		if (instrument instanceof FxForward f) {
-			BigDecimal base = f.side().apply(f.notional());
-			BigDecimal quote = base.multiply(f.forwardRate()).negate().setScale(2, RoundingMode.HALF_EVEN);
-			return List.of(new CashFlow(f.valueDate(), f.pair().base(), base),
-					new CashFlow(f.valueDate(), f.pair().quote(), quote));
-		}
-		if (instrument instanceof Bond b) {
-			List<CashFlow> flows = new ArrayList<>();
-			b.couponDates().forEach(d -> flows.add(new CashFlow(d, b.currency(), b.coupon())));
-			flows.add(new CashFlow(b.maturity(), b.currency(), b.faceValue()));
-			return flows;
-		}
-		throw new IllegalArgumentException("Unknown instrument " + instrument);
+		case Bond b -> Stream.concat(b.couponDates().stream().map(d -> new CashFlow(d, b.currency(), b.coupon())),
+				Stream.of(new CashFlow(b.maturity(), b.currency(), b.faceValue()))).toList();
+		};
 	}
 
 }

@@ -65,8 +65,14 @@ public class OperationController {
 	public PageDto search(@RequestParam(required = false) Status status,
 			@RequestParam(required = false) String portfolio, @RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
-		var result = service.search(status, portfolio, PageRequest.of(page, size, Sort.by("id").descending()));
+		var result = service.search(status, portfolio,
+				PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, 200), Sort.by("id").descending()));
 		return new PageDto(result.getContent(), result.getNumber(), result.getSize(), result.getTotalElements());
+	}
+
+	@GetMapping("/blotter")
+	public List<BlotterLine> blotter() {
+		return service.blotter();
 	}
 
 	@GetMapping("/summary")

@@ -2,6 +2,7 @@ package com.ariary.operation;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
@@ -80,8 +81,13 @@ public class OperationService {
 	}
 
 	@Transactional(readOnly = true)
+	public List<BlotterLine> blotter() {
+		return operations.blotter(Status.CANCELLED);
+	}
+
+	@Transactional(readOnly = true)
 	public Map<String, Summary> summary() {
-		return operations.findAll().stream()
+		return operations.findAll().stream().filter(o -> o.getStatus() != Status.CANCELLED)
 				.collect(Collectors.groupingBy(o -> o.getCurrency().getCode(), TreeMap::new,
 						Collectors.teeing(Collectors.counting(),
 								Collectors.reducing(BigDecimal.ZERO, Operation::getNotional, BigDecimal::add),
